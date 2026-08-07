@@ -1,0 +1,176 @@
+version: '3.8'
+
+# =============================================================================
+# Docker Compose Alternative (Experimental)
+# =============================================================================
+# This is an optional Docker-based deployment for testing/development.
+# For production, the Debian package installation is recommended.
+#
+# WARNING: Blockbook requires significant resources. Running all 5 coins
+# in containers on a single host requires 64GB+ RAM and fast NVMe storage.
+#
+# Usage:
+#   docker compose up -d bitcoin-backend
+#   # Wait for backend to sync, then:
+#   docker compose up -d bitcoin-blockbook
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Bitcoin
+  # ---------------------------------------------------------------------------
+  bitcoin-backend:
+    image: ruimarinho/bitcoin-core:latest
+    container_name: bitcoin-backend
+    restart: unless-stopped
+    ports:
+      - "8333:8333"     # P2P
+      - "8030:8030"     # RPC (internal)
+      - "28330:28330"   # ZMQ
+    volumes:
+      - /opt/coins/data/bitcoin/backend:/data
+    command: >
+      -server=1
+      -txindex=1
+      -rpcbind=0.0.0.0
+      -rpcport=8030
+      -rpcuser=bitcoin
+      -rpcpassword=bitcoinrpc
+      -rpcallowip=0.0.0.0/0
+      -zmqpubrawtx=tcp://0.0.0.0:28330
+      -zmqpubrawblock=tcp://0.0.0.0:28330
+      -datadir=/data
+    networks:
+      - blockbook-net
+
+  # ---------------------------------------------------------------------------
+  # Litecoin
+  # ---------------------------------------------------------------------------
+  litecoin-backend:
+    image: uphold/litecoin-core:latest
+    container_name: litecoin-backend
+    restart: unless-stopped
+    ports:
+      - "9333:9333"
+      - "8031:8031"
+      - "28331:28331"
+    volumes:
+      - /opt/coins/data/litecoin/backend:/data
+    command: >
+      -server=1
+      -txindex=1
+      -rpcbind=0.0.0.0
+      -rpcport=8031
+      -rpcuser=litecoin
+      -rpcpassword=litecoinrpc
+      -rpcallowip=0.0.0.0/0
+      -zmqpubrawtx=tcp://0.0.0.0:28331
+      -zmqpubrawblock=tcp://0.0.0.0:28331
+      -datadir=/data
+    networks:
+      - blockbook-net
+
+  # ---------------------------------------------------------------------------
+  # Bitcoin Cash
+  # ---------------------------------------------------------------------------
+  bch-backend:
+    image: zquestz/bitcoin-cash-node:latest
+    container_name: bch-backend
+    restart: unless-stopped
+    ports:
+      - "8334:8334"
+      - "8032:8032"
+      - "28332:28332"
+    volumes:
+      - /opt/coins/data/bcash/backend:/data
+    command: >
+      -server=1
+      -txindex=1
+      -rpcbind=0.0.0.0
+      -rpcport=8032
+      -rpcuser=bcash
+      -rpcpassword=bcashrpc
+      -rpcallowip=0.0.0.0/0
+      -zmqpubrawtx=tcp://0.0.0.0:28332
+      -zmqpubrawblock=tcp://0.0.0.0:28332
+      -datadir=/data
+    networks:
+      - blockbook-net
+
+  # ---------------------------------------------------------------------------
+  # Dash
+  # ---------------------------------------------------------------------------
+  dash-backend:
+    image: dashpay/dashd:latest
+    container_name: dash-backend
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+      - "8033:8033"
+      - "28333:28333"
+    volumes:
+      - /opt/coins/data/dash/backend:/data
+    command: >
+      -server=1
+      -txindex=1
+      -rpcbind=0.0.0.0
+      -rpcport=8033
+      -rpcuser=dash
+      -rpcpassword=dashrpc
+      -rpcallowip=0.0.0.0/0
+      -zmqpubrawtx=tcp://0.0.0.0:28333
+      -zmqpubrawblock=tcp://0.0.0.0:28333
+      -datadir=/data
+    networks:
+      - blockbook-net
+
+  # ---------------------------------------------------------------------------
+  # Zcash
+  # ---------------------------------------------------------------------------
+  zcash-backend:
+    image: electriccoinco/zcashd:latest
+    container_name: zcash-backend
+    restart: unless-stopped
+    ports:
+      - "8233:8233"
+      - "8034:8034"
+      - "28334:28334"
+    volumes:
+      - /opt/coins/data/zcash/backend:/data
+    command: >
+      -server=1
+      -txindex=1
+      -rpcbind=0.0.0.0
+      -rpcport=8034
+      -rpcuser=zcash
+      -rpcpassword=zcashrpc
+      -rpcallowip=0.0.0.0/0
+      -datadir=/data
+    networks:
+      - blockbook-net
+
+  # ---------------------------------------------------------------------------
+  # Nginx Reverse Proxy
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: blockbook-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./configs/nginx-blockbook.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - bitcoin-backend
+      - litecoin-backend
+      - bch-backend
+      - dash-backend
+      - zcash-backend
+    networks:
+      - blockbook-net
+
+networks:
+  blockbook-net:
+    driver: bridge
