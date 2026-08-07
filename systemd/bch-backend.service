@@ -1,0 +1,33 @@
+[Unit]
+Description=Bitcoin Cash Node daemon
+After=network.target
+
+[Service]
+Type=forking
+User=bcash
+Group=bcash
+ExecStart=/opt/coins/nodes/bcash/bin/bitcoind \
+    -datadir=/opt/coins/data/bcash/backend \
+    -conf=/opt/coins/nodes/bcash/bcash.conf \
+    -pid=/opt/coins/data/bcash/backend/bitcoind.pid \
+    -daemon
+ExecStop=/opt/coins/nodes/bcash/bin/bitcoin-cli \
+    -datadir=/opt/coins/data/bcash/backend \
+    -conf=/opt/coins/nodes/bcash/bcash.conf stop
+PIDFile=/opt/coins/data/bcash/backend/bitcoind.pid
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+LimitNOFILE=65536
+MemoryMax=8G
+
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/bcash/backend
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

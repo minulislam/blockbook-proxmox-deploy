@@ -1,0 +1,36 @@
+[Unit]
+Description=Blockbook Bitcoin indexer and API
+After=backend-bitcoin.service network.target
+Wants=backend-bitcoin.service
+
+[Service]
+Type=simple
+User=blockbook-bitcoin
+Group=blockbook-bitcoin
+ExecStart=/opt/coins/blockbook/bitcoin/bin/blockbook \
+    -sync \
+    -blockchaincfg=/opt/coins/blockbook/bitcoin/blockchaincfg.json \
+    -internal=:9030 \
+    -public=:9130 \
+    -certfile=/opt/coins/blockbook/bitcoin/server/testcert \
+    -dbcache=500 \
+    -workers=4 \
+    -logtostderr
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=600
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=24G
+
+# Hardening
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/bitcoin/blockbook
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,34 @@
+[Unit]
+Description=Blockbook Dash indexer and API
+After=backend-dash.service network.target
+Wants=backend-dash.service
+
+[Service]
+Type=simple
+User=blockbook-dash
+Group=blockbook-dash
+ExecStart=/opt/coins/blockbook/dash/bin/blockbook \
+    -sync \
+    -blockchaincfg=/opt/coins/blockbook/dash/blockchaincfg.json \
+    -internal=:9033 \
+    -public=:9133 \
+    -certfile=/opt/coins/blockbook/dash/server/testcert \
+    -dbcache=500 \
+    -workers=4 \
+    -logtostderr
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=600
+
+LimitNOFILE=65536
+MemoryMax=12G
+
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/dash/blockbook
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,34 @@
+[Unit]
+Description=Blockbook Litecoin indexer and API
+After=backend-litecoin.service network.target
+Wants=backend-litecoin.service
+
+[Service]
+Type=simple
+User=blockbook-litecoin
+Group=blockbook-litecoin
+ExecStart=/opt/coins/blockbook/litecoin/bin/blockbook \
+    -sync \
+    -blockchaincfg=/opt/coins/blockbook/litecoin/blockchaincfg.json \
+    -internal=:9031 \
+    -public=:9131 \
+    -certfile=/opt/coins/blockbook/litecoin/server/testcert \
+    -dbcache=500 \
+    -workers=4 \
+    -logtostderr
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=600
+
+LimitNOFILE=65536
+MemoryMax=12G
+
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/litecoin/blockbook
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,33 @@
+[Unit]
+Description=Zcash daemon
+After=network.target
+
+[Service]
+Type=forking
+User=zcash
+Group=zcash
+ExecStart=/opt/coins/nodes/zcash/bin/zcashd \
+    -datadir=/opt/coins/data/zcash/backend \
+    -conf=/opt/coins/nodes/zcash/zcash.conf \
+    -pid=/opt/coins/data/zcash/backend/zcashd.pid \
+    -daemon
+ExecStop=/opt/coins/nodes/zcash/bin/zcash-cli \
+    -datadir=/opt/coins/data/zcash/backend \
+    -conf=/opt/coins/nodes/zcash/zcash.conf stop
+PIDFile=/opt/coins/data/zcash/backend/zcashd.pid
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+LimitNOFILE=65536
+MemoryMax=8G
+
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/zcash/backend
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

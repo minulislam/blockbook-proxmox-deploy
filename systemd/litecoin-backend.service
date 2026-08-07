@@ -1,0 +1,33 @@
+[Unit]
+Description=Litecoin Core daemon
+After=network.target
+
+[Service]
+Type=forking
+User=litecoin
+Group=litecoin
+ExecStart=/opt/coins/nodes/litecoin/bin/litecoind \
+    -datadir=/opt/coins/data/litecoin/backend \
+    -conf=/opt/coins/nodes/litecoin/litecoin.conf \
+    -pid=/opt/coins/data/litecoin/backend/litecoind.pid \
+    -daemon
+ExecStop=/opt/coins/nodes/litecoin/bin/litecoin-cli \
+    -datadir=/opt/coins/data/litecoin/backend \
+    -conf=/opt/coins/nodes/litecoin/litecoin.conf stop
+PIDFile=/opt/coins/data/litecoin/backend/litecoind.pid
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+LimitNOFILE=65536
+MemoryMax=8G
+
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/litecoin/backend
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

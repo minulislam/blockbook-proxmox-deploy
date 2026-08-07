@@ -1,0 +1,33 @@
+[Unit]
+Description=Dash Core daemon
+After=network.target
+
+[Service]
+Type=forking
+User=dash
+Group=dash
+ExecStart=/opt/coins/nodes/dash/bin/dashd \
+    -datadir=/opt/coins/data/dash/backend \
+    -conf=/opt/coins/nodes/dash/dash.conf \
+    -pid=/opt/coins/data/dash/backend/dashd.pid \
+    -daemon
+ExecStop=/opt/coins/nodes/dash/bin/dash-cli \
+    -datadir=/opt/coins/data/dash/backend \
+    -conf=/opt/coins/nodes/dash/dash.conf stop
+PIDFile=/opt/coins/data/dash/backend/dashd.pid
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=300
+TimeoutStopSec=300
+
+LimitNOFILE=65536
+MemoryMax=8G
+
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/coins/data/dash/backend
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
